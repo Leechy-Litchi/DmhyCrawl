@@ -9,5 +9,3 @@
 - re
 - pandas
 - oepnpyxl
-TODO:
-多核
