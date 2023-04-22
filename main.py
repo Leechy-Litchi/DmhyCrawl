@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-import multiprocessing,threading
+import multiprocessing
+from multiprocessing.managers import BaseManager
+import threading
 from zhconv import convert
 global list
 global k
@@ -172,7 +174,6 @@ def get_ratio(first,second)->bool:
 
 def write_xlsx():
     import pandas as pd
-    writer = pd.ExcelWriter('./out.xlsx')
     newlist = {"番剧名称":[],"发布页面":[],"下载链接":[]}
     for i in list:
         try:
@@ -183,16 +184,19 @@ def write_xlsx():
         except:
             print("格式化错误")
             print(i)
+    data = pd.DataFrame(newlist)
+    sheetNames = data.keys()    
     try:
-        data = pd.DataFrame(newlist)
-        sheetNames = data.keys()    
+        reader = pd.read_excel('./out.xlsx')
+        data_all = pd.concat([data,reader ], ignore_index=True)
+        data_all = data_all.drop_duplicates(keep='first')
+        data_all.to_excel('./out.xlsx')   
+    except FileNotFoundError:
+        writer = pd.ExcelWriter('./out.xlsx')        
         for sheetName in sheetNames:
             data.to_excel(writer, sheet_name=sheetName)
-    except:
-        print("保存错误")
-    writer.close()    
+        writer.close()    
     print("表格已生成")
-
 
 if __name__ == '__main__':
     get_list()
